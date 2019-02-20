@@ -288,7 +288,7 @@ ENDPOINTS_FQDN=${29}
 AAD_TENANTID=${30}
 RG_NAME=${31}
 KV_NAME=${32}
-IS_ADFS=${33}
+IS_ADFS=true
 
 # Echo out the parameters
 echo "--- configure-poa.sh starting up ---"

@@ -151,7 +151,7 @@ SPN_APPID=${15}
 SPN_KEY=${16}
 AAD_TENANTID=${17}
 RG_NAME=${18}
-IS_ADFS=${19}
+IS_ADFS=true
 
 # Echo out the parameters
 echo "--- configure-validator.sh starting up ---"

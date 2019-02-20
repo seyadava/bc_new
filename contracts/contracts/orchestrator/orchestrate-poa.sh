@@ -77,7 +77,7 @@ SPN_APPID=${15}
 RG_NAME=${16}
 KV_NAME=${17}
 ENDPOINTS_FQDN=${18}
-IS_ADFS=${19} 
+IS_ADFS=true 
 
 # Constants
 ADDRESS_LIST="";
