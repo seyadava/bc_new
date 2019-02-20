@@ -162,7 +162,7 @@ orchestrate_poa()
 			ACCESS_TOKEN=$(get_access_token);
 		fi
 
-		containerId=$(sudo docker run -d -v $DEPLOYMENT_LOG_PATH:$DEPLOYMENT_LOG_PATH -v $PARITY_DEV_PATH:$PARITY_DEV_PATH -v $CERTIFICATE_PATH:$CERTIFICATE_PATH -e NODE_ENV=production -e NodeCount=$NodeCount -e MODE=$MODE -e KEY_VAULT_BASE_URL=$KEY_VAULT_BASE_URL -e STORAGE_ACCOUNT=$STORAGE_ACCOUNT -e CONTAINER_NAME=$CONTAINER_NAME -e STORAGE_ACCOUNT_KEY=$STORAGE_ACCOUNT_KEY -e ETH_NETWORK_ID=$ETH_NETWORK_ID -e VALIDATOR_ADMIN_ACCOUNT=$VALIDATOR_ADMIN_ACCOUNT -e CONSORTIUM_DATA_URL=$CONSORTIUM_DATA_URL -e ACCESS_TOKEN=$ACCESS_TOKEN -e CONFIG_LOG_FILE_PATH=$CONFIG_LOG_FILE_PATH -e TRANSACTION_PERMISSION_CONTRACT="$TRANSACTION_PERMISSION_CONTRACT" -e AAD_TENANTID=$AAD_TENANTID -e SPN_KEY=$SPN_KEY -e SPN_APPID=$SPN_APPID -e RG_NAME=$RG_NAME -e KV_NAME=$KV_NAME -e ENDPOINTS_FQDN=$ENDPOINTS_FQDN --network host $ORCHESTRATOR_DOCKER_IMAGE);
+		containerId=$(sudo docker run -d -v $DEPLOYMENT_LOG_PATH:$DEPLOYMENT_LOG_PATH -v $PARITY_DEV_PATH:$PARITY_DEV_PATH -v $CERTIFICATE_PATH:$CERTIFICATE_PATH -e NODE_ENV=production -e NodeCount=$NodeCount -e MODE=$MODE -e KEY_VAULT_BASE_URL=$KEY_VAULT_BASE_URL -e STORAGE_ACCOUNT=$STORAGE_ACCOUNT -e CONTAINER_NAME=$CONTAINER_NAME -e STORAGE_ACCOUNT_KEY=$STORAGE_ACCOUNT_KEY -e ETH_NETWORK_ID=$ETH_NETWORK_ID -e VALIDATOR_ADMIN_ACCOUNT=$VALIDATOR_ADMIN_ACCOUNT -e CONSORTIUM_DATA_URL=$CONSORTIUM_DATA_URL -e ACCESS_TOKEN=$ACCESS_TOKEN -e CONFIG_LOG_FILE_PATH=$CONFIG_LOG_FILE_PATH -e TRANSACTION_PERMISSION_CONTRACT="$TRANSACTION_PERMISSION_CONTRACT" -e AAD_TENANTID=$AAD_TENANTID -e SPN_KEY=$SPN_KEY -e SPN_APPID=$SPN_APPID -e RG_NAME=$RG_NAME -e KV_NAME=$KV_NAME -e ENDPOINTS_FQDN=$ENDPOINTS_FQDN -e IS_ADFS=$IS_ADFS --network host $ORCHESTRATOR_DOCKER_IMAGE);
 		if [ $? -ne 0 ]; then
 			unsuccessful_exit "Unable to run docker image $ORCHESTRATOR_DOCKER_IMAGE." 8;
 			break;
@@ -190,7 +190,7 @@ orchestrate_poa()
 setup_rc_local()
 {
 	echo "===== Started setup_rc_local =====";
-    echo -e '#!/bin/bash' "\nsudo -u $AZUREUSER /bin/bash $HOMEDIR/configure-validator.sh \"$AZUREUSER\" \"$NodeCount\" \"$KEY_VAULT_BASE_URL\" \"$STORAGE_ACCOUNT\" \"$CONTAINER_NAME\" \"$STORAGE_ACCOUNT_KEY\" \"$VALIDATOR_ADMIN_ACCOUNT\" \"$NUM_BOOT_NODES\" \"$RPC_PORT\" \"$OMS_WORKSPACE_ID\" \"$OMS_PRIMARY_KEY\" \"$ADMIN_SITE_PORT\" \"$CONSORTIUM_MEMBER_ID\" \"$MODE\" \"$CONSORTIUM_DATA_URL\" \"$DOCKER_REPOSITORY\" \"$DOCKER_LOGIN\" \"$DOCKER_PASSWORD\" \"$DOCKER_IMAGE_ETHERADMIN\" \"$DOCKER_IMAGE_ETHSTAT\" \"$DOCKER_IMAGE_VALIDATOR\" \"$MUST_DEPLOY_GATEWAY\" \"$ACCESS_TYPE\" \"$ENDPOINTS_FQDN\" \"$SPN_APPID\" \"$SPN_KEY\" \"$AAD_TENANTID\" \"$RG_NAME\" >> $CONFIG_LOG_FILE_PATH 2>&1 & " | sudo tee /etc/rc.local 2>&1 1>/dev/null	
+    echo -e '#!/bin/bash' "\nsudo -u $AZUREUSER /bin/bash $HOMEDIR/configure-validator.sh \"$AZUREUSER\" \"$NodeCount\" \"$KEY_VAULT_BASE_URL\" \"$STORAGE_ACCOUNT\" \"$CONTAINER_NAME\" \"$STORAGE_ACCOUNT_KEY\" \"$VALIDATOR_ADMIN_ACCOUNT\" \"$NUM_BOOT_NODES\" \"$RPC_PORT\" \"$OMS_WORKSPACE_ID\" \"$OMS_PRIMARY_KEY\" \"$ADMIN_SITE_PORT\" \"$CONSORTIUM_MEMBER_ID\" \"$MODE\" \"$CONSORTIUM_DATA_URL\" \"$DOCKER_REPOSITORY\" \"$DOCKER_LOGIN\" \"$DOCKER_PASSWORD\" \"$DOCKER_IMAGE_ETHERADMIN\" \"$DOCKER_IMAGE_ETHSTAT\" \"$DOCKER_IMAGE_VALIDATOR\" \"$MUST_DEPLOY_GATEWAY\" \"$ACCESS_TYPE\" \"$ENDPOINTS_FQDN\" \"$SPN_APPID\" \"$SPN_KEY\" \"$AAD_TENANTID\" \"$RG_NAME\" \"$IS_ADFS\" >> $CONFIG_LOG_FILE_PATH 2>&1 & " | sudo tee /etc/rc.local 2>&1 1>/dev/null	
 	if [ $? -ne 0 ]; then
 		unsuccessful_exit "Failed to setup rc.local for restart on VM reboot." 3;
 	fi
@@ -229,6 +229,15 @@ setup_cli_certificates()
 		sudo update-ca-certificates
 		export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
+	fi
+
+	if [ "$IS_ADFS" = true ]; then
+		spCertName="$SPN_KEY.crt"
+		spCertKey="$SPN_KEY.prv"
+		sudo cp /var/lib/waagent/$spCertName /home/$AZUREUSER/
+		sudo cp /var/lib/waagent/$spCertKey /home/$AZUREUSER/
+		sudo cat /home/$AZUREUSER/$spCertName /home/$AZUREUSER/$spCertKey > /home/$AZUREUSER/servicePrincipalCertificate.pem
+		SPN_KEY=/home/$AZUREUSER/servicePrincipalCertificate.pem 
 	fi
 }
 
@@ -279,6 +288,7 @@ ENDPOINTS_FQDN=${29}
 AAD_TENANTID=${30}
 RG_NAME=${31}
 KV_NAME=${32}
+IS_ADFS=${33}
 
 # Echo out the parameters
 echo "--- configure-poa.sh starting up ---"
@@ -314,6 +324,7 @@ echo "ENDPOINTS_FQDN=$ENDPOINTS_FQDN"
 echo "AAD_TENANTID=$AAD_TENANTID"
 echo "RG_NAME = $RG_NAME"
 echo "KV_NAME = $KV_NAME"
+echo "IS_ADFS = $IS_ADFS"
 
 #####################################################################################
 # Log Folder Locations
@@ -416,7 +427,7 @@ fi
 # Run validator node.
 ################################################################################################
 setup_rc_local
-sudo -u $AZUREUSER /bin/bash /home/$AZUREUSER/configure-validator.sh "$AZUREUSER" "$NodeCount" "$KEY_VAULT_BASE_URL" "$STORAGE_ACCOUNT" "$CONTAINER_NAME" "$STORAGE_ACCOUNT_KEY" "$VALIDATOR_ADMIN_ACCOUNT" "$NUM_BOOT_NODES" "$RPC_PORT" "$OMS_WORKSPACE_ID" "$OMS_PRIMARY_KEY" "$ADMIN_SITE_PORT" "$CONSORTIUM_MEMBER_ID" "$MODE" "$CONSORTIUM_DATA_URL" "$DOCKER_REPOSITORY" "$DOCKER_LOGIN" "$DOCKER_PASSWORD" "$DOCKER_IMAGE_ETHERADMIN" "$DOCKER_IMAGE_ETHSTAT" "$DOCKER_IMAGE_VALIDATOR" "$MUST_DEPLOY_GATEWAY" "$ACCESS_TYPE" "$ENDPOINTS_FQDN" "$SPN_APPID" "$SPN_KEY" "$AAD_TENANTID" "$RG_NAME" >> $CONFIG_LOG_FILE_PATH 2>&1 &
+sudo -u $AZUREUSER /bin/bash /home/$AZUREUSER/configure-validator.sh "$AZUREUSER" "$NodeCount" "$KEY_VAULT_BASE_URL" "$STORAGE_ACCOUNT" "$CONTAINER_NAME" "$STORAGE_ACCOUNT_KEY" "$VALIDATOR_ADMIN_ACCOUNT" "$NUM_BOOT_NODES" "$RPC_PORT" "$OMS_WORKSPACE_ID" "$OMS_PRIMARY_KEY" "$ADMIN_SITE_PORT" "$CONSORTIUM_MEMBER_ID" "$MODE" "$CONSORTIUM_DATA_URL" "$DOCKER_REPOSITORY" "$DOCKER_LOGIN" "$DOCKER_PASSWORD" "$DOCKER_IMAGE_ETHERADMIN" "$DOCKER_IMAGE_ETHSTAT" "$DOCKER_IMAGE_VALIDATOR" "$MUST_DEPLOY_GATEWAY" "$ACCESS_TYPE" "$ENDPOINTS_FQDN" "$SPN_APPID" "$SPN_KEY" "$AAD_TENANTID" "$RG_NAME" "$IS_ADFS" >> $CONFIG_LOG_FILE_PATH 2>&1 &
 
 ############### Deployment Completed #########################
 echo "Commands succeeded. Exiting";

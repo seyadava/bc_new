@@ -107,6 +107,15 @@ setup_cli_certificates()
 		export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
 	fi
+
+    if [ "$IS_ADFS" = true ]; then
+		spCertName="$SPN_KEY.crt"
+		spCertKey="$SPN_KEY.prv"
+		sudo cp /var/lib/waagent/$spCertName /home/$AZUREUSER/
+		sudo cp /var/lib/waagent/$spCertKey /home/$AZUREUSER/
+		sudo cat /home/$AZUREUSER/$spCertName /home/$AZUREUSER/$spCertKey > /home/$AZUREUSER/servicePrincipalCertificate.pem
+		SPN_KEY=/home/$AZUREUSER/servicePrincipalCertificate.pem 
+	fi
 }
 
 configure_endpoints()
@@ -142,6 +151,7 @@ SPN_APPID=${15}
 SPN_KEY=${16}
 AAD_TENANTID=${17}
 RG_NAME=${18}
+IS_ADFS=${19}
 
 # Echo out the parameters
 echo "--- configure-validator.sh starting up ---"
@@ -163,6 +173,7 @@ echo "SPN_APPID=$SPN_APPID"
 echo "SPN_KEY=$SPN_KEY"
 echo "AAD_TENANTID=$AAD_TENANTID"
 echo "RG_NAME=$RG_NAME"
+echo "IS_ADFS = $IS_ADFS"
 
 #####################################################################################
 # Log Folder Locations

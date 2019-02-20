@@ -34,6 +34,15 @@ setup_cli_certificates()
 		export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
 	fi
+
+	if [ "$IS_ADFS" = true ]; then
+		spCertName="$SPN_KEY.crt"
+		spCertKey="$SPN_KEY.prv"
+		sudo cp /var/lib/waagent/$spCertName /home/$AZUREUSER/
+		sudo cp /var/lib/waagent/$spCertKey /home/$AZUREUSER/
+		sudo cat /home/$AZUREUSER/$spCertName /home/$AZUREUSER/$spCertKey > /home/$AZUREUSER/servicePrincipalCertificate.pem
+		SPN_KEY=/home/$AZUREUSER/servicePrincipalCertificate.pem 
+	fi
 }
 
 configure_endpoints()
@@ -67,7 +76,8 @@ SPN_KEY=${14}
 SPN_APPID=${15}
 RG_NAME=${16}
 KV_NAME=${17}
-ENDPOINTS_FQDN=${18} 
+ENDPOINTS_FQDN=${18}
+IS_ADFS=${19} 
 
 # Constants
 ADDRESS_LIST="";
@@ -95,6 +105,7 @@ echo "SPN_APPID= $SPN_APPID" >> "$CONFIG_LOG_FILE_PATH"
 echo "RG_NAME= $RG_NAME" >> "$CONFIG_LOG_FILE_PATH"
 echo "KV_NAME= $KV_NAME" >> "$CONFIG_LOG_FILE_PATH"
 echo "ENDPOINTS_FQDN= $ENDPOINTS_FQDN" >> "$CONFIG_LOG_FILE_PATH"
+echo "IS_ADFS = $IS_ADFS" >> "$CONFIG_LOG_FILE_PATH"
 
 ################################################
 # Copy required certificates for Azure CLI

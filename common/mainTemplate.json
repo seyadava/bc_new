@@ -174,7 +174,7 @@
 		},
 		"baseUrl": {
 			"type": "string",
-			"defaultValue": "https://raw.githubusercontent.com/seyadava/AzureStack-QuickStart-Templates/master/ethereum-consortium-blockchain-poa/common",
+			"defaultValue": "https://raw.githubusercontent.com/seyadava/bc_new/master/common/",
 			"metadata": {
 				"description": "The base URL to retrieve nested templates"
 			}
@@ -215,7 +215,6 @@
 		"ethNetworkPort": 30300,
 		"linkedUrls": {
 			"vmssSetupUrl": "[concat(variables('baseUrl'),'/nested/vmss.json')]",
-			"vmssConfigUrl": "[concat(variables('baseUrl'),'/nested/vmss-config.json')]",
 			"networkResourcesUrl": "[concat(variables('baseUrl'),'/nested/network-resources.json')]",
 			"loadBalancerUrl": "[concat(variables('baseUrl'),'/nested/network-resources.loadBalancer.json')]",
 			"keyVaultDeployUrl": "[concat(variables('baseUrl'),'/nested/createKeyVault.json')]",

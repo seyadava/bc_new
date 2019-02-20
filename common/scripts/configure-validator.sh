@@ -32,6 +32,15 @@ setup_cli_certificates()
 		export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
 	fi
+
+    if [ "$IS_ADFS" = true ]; then
+		spCertName="$SPN_KEY.crt"
+		spCertKey="$SPN_KEY.prv"
+		sudo cp /var/lib/waagent/$spCertName /home/$AZUREUSER/
+		sudo cp /var/lib/waagent/$spCertKey /home/$AZUREUSER/
+		sudo cat /home/$AZUREUSER/$spCertName /home/$AZUREUSER/$spCertKey > /home/$AZUREUSER/servicePrincipalCertificate.pem
+		SPN_KEY=/home/$AZUREUSER/servicePrincipalCertificate.pem 
+	fi
 }
 
 configure_endpoints()
@@ -109,7 +118,7 @@ start_admin_website(){
 # Starts a validator node. 
 run_validator()
 {
-    sudo -u $AZUREUSER /bin/bash /home/$AZUREUSER/run-validator.sh "$AZUREUSER" "$NODE_COUNT" "$STORAGE_ACCOUNT" "$CONTAINER_NAME" "$STORAGE_ACCOUNT_KEY" "$ADMINID" "$NUM_BOOT_NODES" "$RPC_PORT" "$MODE" "$VALIDATOR_DOCKER_IMAGE" "$CONSORTIUM_DATA_URL" "$MUST_DEPLOY_GATEWAY" "$ACCESS_TYPE" "$ENDPOINTS_FQDN" "$SPN_APPID" "$SPN_KEY" "$AAD_TENANTID" "$RG_NAME" >> $CONFIG_LOG_FILE_PATH 2>&1 & 
+    sudo -u $AZUREUSER /bin/bash /home/$AZUREUSER/run-validator.sh "$AZUREUSER" "$NODE_COUNT" "$STORAGE_ACCOUNT" "$CONTAINER_NAME" "$STORAGE_ACCOUNT_KEY" "$ADMINID" "$NUM_BOOT_NODES" "$RPC_PORT" "$MODE" "$VALIDATOR_DOCKER_IMAGE" "$CONSORTIUM_DATA_URL" "$MUST_DEPLOY_GATEWAY" "$ACCESS_TYPE" "$ENDPOINTS_FQDN" "$SPN_APPID" "$SPN_KEY" "$AAD_TENANTID" "$RG_NAME" "$IS_ADFS" >> $CONFIG_LOG_FILE_PATH 2>&1 & 
 }
 
 join_leaders_network() {
@@ -190,6 +199,7 @@ SPN_APPID=${25}
 SPN_KEY=${26}
 AAD_TENANTID=${27}
 RG_NAME=${28}
+IS_ADFS=${29}
 
 # Echo out the parameters
 echo "--- configure-validator.sh starting up ---"
@@ -219,7 +229,8 @@ echo "ENDPOINTS_FQDN=$ENDPOINTS_FQDN"
 echo "SPN_APPID=$SPN_APPID"
 echo "SPN_KEY=$SPN_KEY"
 echo "AAD_TENANTID=$AAD_TENANTID"
-echo "RG_NAME=$VMSS_PUBLIC_IP"
+echo "RG_NAME=$RG_NAME"
+echo "IS_ADFS=$IS_ADFS"
 
 #####################################################################################
 # Log Folder Locations

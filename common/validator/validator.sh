@@ -19,6 +19,15 @@ setup_cli_certificates()
 		export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
 	fi
+
+    if [ "$IS_ADFS" = true ]; then
+		spCertName="$SPN_KEY.crt"
+		spCertKey="$SPN_KEY.prv"
+		sudo cp /var/lib/waagent/$spCertName /home/$AZUREUSER/
+		sudo cp /var/lib/waagent/$spCertKey /home/$AZUREUSER/
+		sudo cat /home/$AZUREUSER/$spCertName /home/$AZUREUSER/$spCertKey > /home/$AZUREUSER/servicePrincipalCertificate.pem
+		SPN_KEY=/home/$AZUREUSER/servicePrincipalCertificate.pem 
+	fi
 }
 
 configure_endpoints()
@@ -280,6 +289,7 @@ SPN_APPID=${18}
 SPN_KEY=${19}
 AAD_TENANTID=${20}
 IP_ADDRESS=${21}
+IS_ADFS=${22}
 
 
 echo "AZUREUSER=$AZUREUSER"
@@ -303,6 +313,7 @@ echo "SPN_APPID=$SPN_APPID"
 echo "SPN_KEY=$SPN_KEY"
 echo "AAD_TENANTID=$AAD_TENANTID"
 echo "IP_ADDRESS=$IP_ADDRESS"
+echo "IS_ADFS=$IS_ADFS"
 
 # Constants
 NOOFTRIES=3;

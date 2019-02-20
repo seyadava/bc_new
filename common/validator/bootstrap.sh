@@ -20,7 +20,7 @@ cp parity_log_config /etc/logrotate.d/parity
 
 cd $HOMEDIR
 
-sudo ./validator.sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}" "${13}" "${14}" "${16}" "${17}" "${18}" "${19}" "${20}" "${21}" "${22}" >> $CONFIG_LOG_FILE_PATH 2>&1 &
+sudo ./validator.sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}" "${13}" "${14}" "${16}" "${17}" "${18}" "${19}" "${20}" "${21}" "${22}" "${23}" >> $CONFIG_LOG_FILE_PATH 2>&1 &
 
 validator_pid=$!
 if wait $validator_pid; then
