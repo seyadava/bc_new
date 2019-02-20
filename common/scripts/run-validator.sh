@@ -56,13 +56,19 @@ start_node()
     keyVaultUrl="$PASSPHRASE_URI?api-version=2016-10-01";
     
     if [ "$ACCESS_TYPE" = "SPN" ]; then
-        accessToken=$(get_access_token_spn "$ENDPOINTS_FQDN" "$SPN_APPID" "$SPN_KEY" "$AAD_TENANTID");
+        #accessToken=$(get_access_token_spn "$ENDPOINTS_FQDN" "$SPN_APPID" "$SPN_KEY" "$AAD_TENANTID");
         ipAddress=$(get_ip_address "$RG_NAME");
-    else
-        accessToken=$(get_access_token);
+    #else
+    #    accessToken=$(get_access_token);
     fi
     
-    keyVaultResponse=$(curl $keyVaultUrl -H "Content-Type: application/json" -H "Authorization: Bearer $accessToken");
+    
+    proto="$(echo $PASSPHRASE_URI | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+    url="$(echo ${PASSPHRASE_URI/$proto/})"
+    IFS='.' read -r -a kvName <<< $url
+    
+    #keyVaultResponse=$(curl $keyVaultUrl -H "Content-Type: application/json" -H "Authorization: Bearer $accessToken");
+    keyVaultResponse=`az keyvault secret show -n $blobname --vault-name $kvName`
     echo "Get KeyVault secret response: $keyVaultResponse";
     passphrase=$(echo $keyVaultResponse | jq -r ".value");
     if [ -z  $passphrase ]; then

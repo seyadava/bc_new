@@ -44,10 +44,14 @@ set_secret_in_keyvault()
     rgName=$8
     kvName=$9
 
-    url="$vaultBaseUrl/secrets/$secretName?api-version=2016-10-01"
-    data="{\"value\": \"${secretValue}\"}"
+    # url="$vaultBaseUrl/secrets/$secretName?api-version=2016-10-01"
+    # data="{\"value\": \"${secretValue}\"}"
     
-    setSecretResponse=$(curl -X PUT $url -d "$data" -H "Content-Type: application/json" -H "Authorization: Bearer $accessToken");    
+    # setSecretResponse=$(curl -X PUT $url -d "$data" -H "Content-Type: application/json" -H "Authorization: Bearer $accessToken");    
+    # secretUri=$(echo $setSecretResponse | jq -r ".id");
+    grant_keyvault_access $spnAppId $spnKey $aadTenantId $kvName $rgName 
+    az keyvault secret set -n $secretName --vault-name $kvName --value $passphrase
+    setSecretResponse=`az keyvault secret show -n $secretName --vault-name $kvName`
     secretUri=$(echo $setSecretResponse | jq -r ".id");
     echo $setSecretResponse >> /var/log/deployment/config.log
     echo $secretUri >> /var/log/deployment/config.log

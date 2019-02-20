@@ -128,9 +128,9 @@ start_parity_devmode_rpc
 # Generate passphrases and addreses. Store passphrases in key vault and upload key vault uri in azure blob
 #############################################################################################################
 
-if [ ! -z $SPN_APPID ]; then
-    grant_keyvault_access $SPN_APPID $SPN_KEY $AAD_TENANTID $KV_NAME $RG_NAME
-fi
+
+grant_keyvault_access $SPN_APPID $SPN_KEY $AAD_TENANTID $KV_NAME $RG_NAME
+
 
 for i in `seq 0 $(($NodeCount - 1))`; do
 	passphrase=$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32);
