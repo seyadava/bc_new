@@ -61,4 +61,4 @@ RUN npm install
 RUN chmod +x bootstrap.sh
 RUN chmod +x orchestrate-poa.sh
 
-CMD ["sh", "-c", "bash bootstrap.sh \"${NodeCount}\" \"${MODE}\" \"${KEY_VAULT_BASE_URL}\" \"${STORAGE_ACCOUNT}\" \"${CONTAINER_NAME}\" \"${STORAGE_ACCOUNT_KEY}\" \"${ETH_NETWORK_ID}\" \"${VALIDATOR_ADMIN_ACCOUNT}\" \"${CONSORTIUM_DATA_URL}\" \"${ACCESS_TOKEN}\" \"${CONFIG_LOG_FILE_PATH}\" \"${TRANSACTION_PERMISSION_CONTRACT}\" \"${AAD_TENANTID}\" \"${SPN_KEY}\" \"${SPN_APPID}\" \"${RG_NAME}\" \"${KV_NAME}\" \"${ENDPOINTS_FQDN}\" \"${IS_ADFS}}\" "]
+CMD ["sh", "-c", "bash bootstrap.sh \"${NodeCount}\" \"${MODE}\" \"${KEY_VAULT_BASE_URL}\" \"${STORAGE_ACCOUNT}\" \"${CONTAINER_NAME}\" \"${STORAGE_ACCOUNT_KEY}\" \"${ETH_NETWORK_ID}\" \"${VALIDATOR_ADMIN_ACCOUNT}\" \"${CONSORTIUM_DATA_URL}\" \"${ACCESS_TOKEN}\" \"${CONFIG_LOG_FILE_PATH}\" \"${TRANSACTION_PERMISSION_CONTRACT}\" \"${AAD_TENANTID}\" \"${SPN_KEY}\" \"${SPN_APPID}\" \"${RG_NAME}\" \"${KV_NAME}\" \"${ENDPOINTS_FQDN}\" \"${IS_ADFS}\" "]
