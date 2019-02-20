@@ -20,7 +20,7 @@ setup_cli_certificates()
 		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
 	fi
 
-    if [ "$IS_ADFS" = true ]; then
+    if [[ ! -z "$IS_ADFS" ]]; then
 		spCertName="$SPN_KEY.crt"
 		spCertKey="$SPN_KEY.prv"
 		sudo cp /var/lib/waagent/$spCertName /home/$AZUREUSER/
@@ -289,7 +289,7 @@ SPN_APPID=${18}
 SPN_KEY=${19}
 AAD_TENANTID=${20}
 IP_ADDRESS=${21}
-IS_ADFS=true
+IS_ADFS=${22}
 
 
 echo "AZUREUSER=$AZUREUSER"

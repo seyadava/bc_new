@@ -108,7 +108,7 @@ setup_cli_certificates()
 		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
 	fi
 
-    if [ "$IS_ADFS" = true ]; then
+    if [[ ! -z "$IS_ADFS" ]]; then
 		spCertName="$SPN_KEY.crt"
 		spCertKey="$SPN_KEY.prv"
 		sudo cp /var/lib/waagent/$spCertName /home/$AZUREUSER/
@@ -151,7 +151,7 @@ SPN_APPID=${15}
 SPN_KEY=${16}
 AAD_TENANTID=${17}
 RG_NAME=${18}
-IS_ADFS=true
+IS_ADFS=${19}
 
 # Echo out the parameters
 echo "--- configure-validator.sh starting up ---"
