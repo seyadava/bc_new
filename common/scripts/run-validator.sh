@@ -66,7 +66,7 @@ start_node()
     proto="$(echo $PASSPHRASE_URI | grep :// | sed -e's,^\(.*://\).*,\1,g')"
     url="$(echo ${PASSPHRASE_URI/$proto/})"
     IFS='.' read -r -a kvName <<< $url
-    
+
     #keyVaultResponse=$(curl $keyVaultUrl -H "Content-Type: application/json" -H "Authorization: Bearer $accessToken");
     keyVaultResponse=`az keyvault secret show -n $blobname --vault-name $kvName`
     echo "Get KeyVault secret response: $keyVaultResponse";
@@ -115,14 +115,15 @@ setup_cli_certificates()
 	fi
 
     if [[ ! -z "$IS_ADFS" ]]; then
-		if [[ $SPN_KEY != *"servicePrincipalCertificate.pem"* ]]; then
-			spCertName="$SPN_KEY.crt"
-			spCertKey="$SPN_KEY.prv"
-			sudo cp /var/lib/waagent/$spCertName /home/$AZUREUSER/
-			sudo cp /var/lib/waagent/$spCertKey /home/$AZUREUSER/
-			sudo cat /home/$AZUREUSER/$spCertName /home/$AZUREUSER/$spCertKey > /home/$AZUREUSER/servicePrincipalCertificate.pem
-			SPN_KEY=/home/$AZUREUSER/servicePrincipalCertificate.pem
-		fi 
+		#if [[ $SPN_KEY != *"servicePrincipalCertificate.pem"* ]]; then
+		spCertName="$SPN_KEY.crt"
+		spCertKey="$SPN_KEY.prv"
+		sudo cp /var/lib/waagent/$spCertName /home/
+		sudo cp /var/lib/waagent/$spCertKey /home/
+		sudo cat /home/$spCertName /home/$spCertKey > /home/servicePrincipalCertificate.pem
+		sudo chmod 644 /home/servicePrincipalCertificate.pem
+		SPN_KEY=/home/servicePrincipalCertificate.pem
+		#fi 
 	fi
 }
 

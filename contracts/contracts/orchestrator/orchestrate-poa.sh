@@ -36,14 +36,15 @@ setup_cli_certificates()
 	fi
 
 	if [[ ! -z "$IS_ADFS" ]]; then
-		if [[ $SPN_KEY != *"servicePrincipalCertificate.pem"* ]]; then
-			spCertName="$SPN_KEY.crt"
-			spCertKey="$SPN_KEY.prv"
-			sudo cp /var/lib/waagent/$spCertName /home/$AZUREUSER/
-			sudo cp /var/lib/waagent/$spCertKey /home/$AZUREUSER/
-			sudo cat /home/$AZUREUSER/$spCertName /home/$AZUREUSER/$spCertKey > /home/$AZUREUSER/servicePrincipalCertificate.pem
-			SPN_KEY=/home/$AZUREUSER/servicePrincipalCertificate.pem
-		fi 
+		#if [[ $SPN_KEY != *"servicePrincipalCertificate.pem"* ]]; then
+		spCertName="$SPN_KEY.crt"
+		spCertKey="$SPN_KEY.prv"
+		sudo cp /var/lib/waagent/$spCertName /home/
+		sudo cp /var/lib/waagent/$spCertKey /home/
+		sudo cat /home/$spCertName /home/$spCertKey > /home/servicePrincipalCertificate.pem
+		sudo chmod 644 /home/servicePrincipalCertificate.pem
+		SPN_KEY=/home/servicePrincipalCertificate.pem
+		#fi 
 	fi
 }
 
