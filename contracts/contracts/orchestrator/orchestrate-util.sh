@@ -27,8 +27,8 @@ grant_keyvault_access()
     aadTenantId=$3
     kvName=$4
     rgName=$5
-    az login --service-principal -u $spnAppId -p $spnKey --tenant $aadTenantId
-    az keyvault create -n $kvName -g $rgName
+    az login --service-principal -u $spnAppId -p $spnKey --tenant $aadTenantId >> /var/log/deployment/config.log
+    az keyvault create -n $kvName -g $rgName >> /var/log/deployment/config.log
 }
 
 # Stores secret in key vault.
@@ -50,7 +50,7 @@ set_secret_in_keyvault()
     # setSecretResponse=$(curl -X PUT $url -d "$data" -H "Content-Type: application/json" -H "Authorization: Bearer $accessToken");    
     # secretUri=$(echo $setSecretResponse | jq -r ".id");
     grant_keyvault_access $spnAppId $spnKey $aadTenantId $kvName $rgName 
-    az keyvault secret set -n $secretName --vault-name $kvName --value $passphrase
+    az keyvault secret set -n $secretName --vault-name $kvName --value $secretValue >> /var/log/deployment/config.log
     setSecretResponse=`az keyvault secret show -n $secretName --vault-name $kvName`
     secretUri=$(echo $setSecretResponse | jq -r ".id");
     echo $setSecretResponse >> /var/log/deployment/config.log
