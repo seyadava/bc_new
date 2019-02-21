@@ -26,6 +26,13 @@ setup_docker() {
 
 setup_cli_certificates()
 {
+    if [ "$ACCESS_TYPE" = "SPN" ]; then
+		sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
+		sudo update-ca-certificates
+		export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
+	fi
+    
 	if [[ ! -z "$IS_ADFS" ]]; then
 		#if [[ $SPN_KEY != *"servicePrincipalCertificate.pem"* ]]; then
 		spCertName="$SPN_KEY.crt"
