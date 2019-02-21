@@ -49,7 +49,10 @@ start_node()
     blobname=$1;
     ipAddress=""
     # Get passphrase from KeyVault and store it in password file
+    echo "HRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" >> /var/log/deployment/config.log
+
     PASSPHRASE_URI=$(cat "$CONFIGDIR/$blobname" | jq -r ".passphraseUri");
+    
     if [ -z $PASSPHRASE_URI ]; then
         unsuccessful_exit "Unable to start validator node. Passphrase url should not be empty." 40
     fi
@@ -66,9 +69,9 @@ start_node()
     proto="$(echo $PASSPHRASE_URI | grep :// | sed -e's,^\(.*://\).*,\1,g')"
     url="$(echo ${PASSPHRASE_URI/$proto/})"
     IFS='.' read -r -a kvName <<< $url
-
+    IFS='.' read -r -a blob <<< $blobname
     #keyVaultResponse=$(curl $keyVaultUrl -H "Content-Type: application/json" -H "Authorization: Bearer $accessToken");
-    keyVaultResponse=`az keyvault secret show -n $blobname --vault-name $kvName`
+    keyVaultResponse=`az keyvault secret show -n $blob --vault-name $kvName`
     echo "Get KeyVault secret response: $keyVaultResponse";
     passphrase=$(echo $keyVaultResponse | jq -r ".value");
     if [ -z  $passphrase ]; then
@@ -113,7 +116,7 @@ setup_cli_certificates()
 		export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
 	fi
-    
+
 	if [[ ! -z "$IS_ADFS" ]]; then
 		#if [[ $SPN_KEY != *"servicePrincipalCertificate.pem"* ]]; then
 		spCertName="$SPN_KEY.crt"
