@@ -131,8 +131,11 @@ start_parity_devmode_rpc
 # Generate passphrases and addreses. Store passphrases in key vault and upload key vault uri in azure blob
 #############################################################################################################
 
-
-grant_keyvault_access $SPN_APPID $SPN_KEY $AAD_TENANTID $KV_NAME $RG_NAME
+if [[ ! -z "$IS_ADFS" ]]; then
+	grant_keyvault_access $SPN_APPID "/home/servicePrincipalCertificate.pem" $AAD_TENANTID $KV_NAME $RG_NAME
+else
+	grant_keyvault_access $SPN_APPID $SPN_KEY $AAD_TENANTID $KV_NAME $RG_NAME
+fi
 
 
 for i in `seq 0 $(($NodeCount - 1))`; do
@@ -145,7 +148,11 @@ for i in `seq 0 $(($NodeCount - 1))`; do
 
 	# Store passphrase in key vault and upload key vault uri to azure blob
 	# TODO: Add retry logic on failure to set keyvault secret or upload blob
-	passphraseUri=$(set_secret_in_keyvault "$KEY_VAULT_BASE_URL" "passphrase-$i" "$passphrase" "$ACCESS_TOKEN" "$AAD_TENANTID" "$SPN_KEY" "$SPN_APPID" "$RG_NAME" "$KV_NAME" );
+	if [[ ! -z "$IS_ADFS" ]]; then
+		passphraseUri=$(set_secret_in_keyvault "$KEY_VAULT_BASE_URL" "passphrase-$i" "$passphrase" "$ACCESS_TOKEN" "$AAD_TENANTID" "/home/servicePrincipalCertificate.pem" "$SPN_APPID" "$RG_NAME" "$KV_NAME" );
+	else
+		passphraseUri=$(set_secret_in_keyvault "$KEY_VAULT_BASE_URL" "passphrase-$i" "$passphrase" "$ACCESS_TOKEN" "$AAD_TENANTID" "$SPN_KEY" "$SPN_APPID" "$RG_NAME" "$KV_NAME" );
+	fi
 	if [ -z "$passphraseUri" ]; then
 		unsuccessful_exit "Unable to set a secret for passphrase in azure KeyVault." 23;
 	fi
