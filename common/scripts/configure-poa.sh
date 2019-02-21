@@ -239,8 +239,17 @@ setup_cli_certificates()
 		sudo cp /var/lib/waagent/$spCertKey /home/
 		sudo cat /home/$spCertName /home/$spCertKey > /home/servicePrincipalCertificate.pem
 		sudo chmod 644 /home/servicePrincipalCertificate.pem
-		SPN_KEY=/home/servicePrincipalCertificate.pem
+		#SPN_KEY=/home/servicePrincipalCertificate.pem
+		az cloud register -n AzureStackCloud --endpoint-resource-manager "https://management.$ENDPOINTS_FQDN" --suffix-storage-endpoint "$ENDPOINTS_FQDN" --suffix-keyvault-dns ".vault.$ENDPOINTS_FQDN"
+		az cloud set -n AzureStackCloud
+		az cloud update --profile 2018-03-01-hybrid
+		az login --service-principal -u $SPN_APPID -p /home/servicePrincipalCertificate.pem --tenant $AAD_TENANTID
 		#fi
+	else
+		az cloud register -n AzureStackCloud --endpoint-resource-manager "https://management.$ENDPOINTS_FQDN" --suffix-storage-endpoint "$ENDPOINTS_FQDN" --suffix-keyvault-dns ".vault.$ENDPOINTS_FQDN"
+		az cloud set -n AzureStackCloud
+		az cloud update --profile 2018-03-01-hybrid
+		az login --service-principal -u $SPN_APPID -p $SPN_KEY --tenant $AAD_TENANTID
 	fi
 }
 
@@ -414,7 +423,7 @@ setup_cli_certificates
 ################################################
 # Configure Cloud Endpoints in Azure CLI
 ################################################
-configure_endpoints
+#configure_endpoints
 sudo -u $AZUREUSER /bin/bash -c "mkdir -p $ETHERADMIN_HOME/public";
 download_docker_images
 

@@ -26,14 +26,7 @@ setup_docker() {
 
 setup_cli_certificates()
 {
-	if [ "$ACCESS_TYPE" = "SPN" ]; then
-		sudo cp /var/lib/waagent/Certificates.pem /usr/local/share/ca-certificates/azsCertificate.crt
-		sudo update-ca-certificates
-		export REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-		sudo sed -i -e "\$aREQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" /etc/environment
-	fi
-
-    if [[ ! -z "$IS_ADFS" ]]; then
+	if [[ ! -z "$IS_ADFS" ]]; then
 		#if [[ $SPN_KEY != *"servicePrincipalCertificate.pem"* ]]; then
 		spCertName="$SPN_KEY.crt"
 		spCertKey="$SPN_KEY.prv"
@@ -41,8 +34,17 @@ setup_cli_certificates()
 		sudo cp /var/lib/waagent/$spCertKey /home/
 		sudo cat /home/$spCertName /home/$spCertKey > /home/servicePrincipalCertificate.pem
 		sudo chmod 644 /home/servicePrincipalCertificate.pem
-		SPN_KEY=/home/servicePrincipalCertificate.pem
-		#fi 
+		#SPN_KEY=/home/servicePrincipalCertificate.pem
+		az cloud register -n AzureStackCloud --endpoint-resource-manager "https://management.$ENDPOINTS_FQDN" --suffix-storage-endpoint "$ENDPOINTS_FQDN" --suffix-keyvault-dns ".vault.$ENDPOINTS_FQDN"
+		az cloud set -n AzureStackCloud
+		az cloud update --profile 2018-03-01-hybrid
+		az login --service-principal -u $SPN_APPID -p /home/servicePrincipalCertificate.pem --tenant $AAD_TENANTID
+		#fi
+	else
+		az cloud register -n AzureStackCloud --endpoint-resource-manager "https://management.$ENDPOINTS_FQDN" --suffix-storage-endpoint "$ENDPOINTS_FQDN" --suffix-keyvault-dns ".vault.$ENDPOINTS_FQDN"
+		az cloud set -n AzureStackCloud
+		az cloud update --profile 2018-03-01-hybrid
+		az login --service-principal -u $SPN_APPID -p $SPN_KEY --tenant $AAD_TENANTID
 	fi
 }
 
@@ -274,7 +276,7 @@ setup_cli_certificates
 ################################################
 # Configure Cloud Endpoints in Azure CLI
 ################################################
-configure_endpoints
+#configure_endpoints
 
 ##########################################################################################################
 #	Wait for orchestrator to finish
